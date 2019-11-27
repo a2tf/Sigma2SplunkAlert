@@ -39,7 +39,24 @@ class DetectionRuleConverter(object):
     @staticmethod
     def performSearchTransformation(transformations, search, sigma_rule):
         for trans in transformations:
-
+            # Search Transformation to combine collections with "OR"
+            if trans == "or_collections":
+                collectionsearch = ""
+                splitted = search.split("\n")
+                #search will only get changed if its collection (multiline)
+                if (len(splitted) > 2):
+                    if (len(splitted[-1]) == 0): del splitted[-1] # delete last entry (empty line)
+                    last = splitted[-1]
+                    for line in splitted:
+                        verticalindex = line.find("|")
+                        if (verticalindex != -1):
+                            collectionsearch = collectionsearch + line[:verticalindex]
+                        else:
+                            collectionsearch = collectionsearch + line
+                        #dont "OR" the last line
+                        if (line!=last):collectionsearch = collectionsearch + " OR "
+                    search = collectionsearch + "\n" #readd the deleted new line at the end
+                    
             # Search Transformation to add whitelist in front of table or transforming command (for better whitelisting)
             if trans == "add_whitelist_in_front":
                 file_name = sigma_rule["title"] + "_whitelist.csv"
